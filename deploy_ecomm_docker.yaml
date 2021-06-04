@@ -1,0 +1,16 @@
+- hosts: localhost
+  
+  vars: 
+    container_name: ecomm_docker
+    container_image: ecommv2
+  
+  tasks:   
+  - name: Create and Run containers for ecomm
+    docker_container:
+      name: "{{ container_name }}"
+      image: "{{ container_image }}"
+      detach: yes
+      published_ports: 12060:8080
+      volumes: /home/antara/learnmaven/ecomm_docker/target:/opt/tomcat/apache-tomcat-8.5.64/webapps
+      state: started
+      restart: yes
