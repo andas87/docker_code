@@ -1,0 +1,43 @@
+- hosts: capstone2
+  vars:
+  - tgt_path: /home/devops/ecomm
+  - src_path: /home/antara/labdocker/ecomm
+  
+  tasks:
+  
+  - name: Create build directory
+    file:
+      path: "{{ tgt_path }}"
+      state: directory
+      mode: 0755
+      
+  - name: Copy Dockerile
+    copy:
+      src: "{{ src_path }}/Dockerfile"
+      dest: "{{ tgt_path }}"
+      mode: 0755
+  - name: Copy SQL script
+    copy:
+      src: "{{ src_path }}/mysqldb_conf.sh"
+      dest: "{{ tgt_path }}"
+      mode: 0755
+  - name: Copy entrypoint script
+    copy:
+      src: "{{ src_path }}/entrypoint.sh"
+      dest: "{{ tgt_path }}"
+      mode: 0755
+  - name: Copy apache tomcat installer zip
+    copy:
+      src: "{{ src_path }}/apache-tomcat-8.5.64.tar.gz"
+      dest: "{{ tgt_path }}"
+      mode: 0755
+      
+  - name: Build docker image
+    docker_image:
+      name: ecomm
+      build:
+        path: "{{ tgt_path }}"
+        pull: yes
+      source: build
+      state: present
+      
