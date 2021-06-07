@@ -1,0 +1,30 @@
+- hosts: capstone2
+  
+  vars: 
+    - container_name: ecomm_docker
+    - container_image: ecomm
+    - war_path: /home/devops/ecomm/webapp
+    - src_path: /var/lib/jenkins/workspace/ecomm_deploy_docker_remoteansi/target/ecomm-0.0.1.war
+  
+  tasks:  
+  - name: Create war directory
+    file:
+      path: "{{ war_path }}"
+      state: directory
+      mode: 0755 
+      
+  - name: Copy war to remote
+    copy:
+      src: "{{ src_path }}"
+      dest: "{{ war_path }}"
+      mode: 0755
+      
+  - name: Create and Run containers for ecomm
+    docker_container:
+      name: "{{ container_name }}"
+      image: "{{ container_image }}"
+      detach: yes
+      published_ports: 12060:8080
+      volumes: "{{ war_path }}:/opt/tomcat/apache-tomcat-8.5.64/webapps"
+      state: started
+      restart: yes
