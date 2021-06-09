@@ -1,0 +1,26 @@
+- hosts: localhost
+
+  vars:
+  - container_image: ecommv2
+  
+  tasks:
+  - name: Set permission to docker.sock file
+    file:
+      path: /var/run/docker.sock
+      state: file
+      mode: 0777
+    become: yes
+      
+  - name: Create ecomm container service
+    docker_swarm_service: 
+      name: ecomm_service
+      image: "{{ container_image }}"
+      mounts:
+        - source: /home/antara/learnmaven/ecomm_docker/target/
+          target: /opt/tomcat/apache-tomcat-8.5.64/webapps/
+          type: bind
+      publish:
+        - published_port: 15050
+          target_port: 8080
+      mode: replicated
+      replicas: 2

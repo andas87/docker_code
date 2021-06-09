@@ -1,0 +1,39 @@
+- hosts: capstone2
+  
+  vars: 
+    - container_image: ecomm
+    - war_path: /home/devops/ecomm/webapp
+    - src_path: /var/lib/jenkins/workspace/ecomm_deploy_dockerswarm_remoteansi/target/ecomm-0.0.1.war
+  
+  tasks:  
+  - name: Create war directory
+    file:
+      path: "{{ war_path }}"
+      state: directory
+      mode: 0755 
+      
+  - name: Copy war to remote
+    copy:
+      src: "{{ src_path }}"
+      dest: "{{ war_path }}"
+      mode: 0755
+      
+  - name: Set permission to docker.sock file
+    file:
+      path: /var/run/docker.sock
+      state: file
+      mode: 0777 
+    
+  - name: Create ecomm container service
+    docker_swarm_service: 
+      name: ecomm_service
+      image: "{{ container_image }}"
+      mounts:
+        - source: "{{ war_path }}"
+          target: /opt/tomcat/apache-tomcat-8.5.64/webapps/
+          type: bind
+      publish:
+        - published_port: 15050
+          target_port: 8080
+      mode: replicated
+      replicas: 2
