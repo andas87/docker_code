@@ -19,6 +19,12 @@
       dest: "{{ war_path }}"
       mode: 0755
       
+  - name: Set permission to docker.sock file
+    file:
+      path: /var/run/docker.sock
+      state: file
+      mode: 0777
+    
   - name: Create and Run containers for ecomm
     docker_container:
       name: "{{ container_name }}"
