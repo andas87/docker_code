@@ -1,0 +1,54 @@
+- hosts: localhost
+  
+  vars: 
+    - jobname: to_be_passed
+    - service_name: ecomm_service
+    - container_name: ecomm_docker
+    - container_image: ecomm
+    - src_path: "/var/lib/jenkins/workspace/{{ jobname }}/target/ecomm-0.0.1.war"
+    - war_path: "{{ ansible_user_dir }}/ecomm/webapp"
+    - tgt_path: /opt/tomcat/apache-tomcat-8.5.64/webapps
+  
+  tasks: 
+  - name: Create war directory
+    file:
+      path: "{{ war_path }}"
+      state: directory
+      mode: 0755 
+      
+  - name: Copy war to remote
+    copy:
+      src: "{{ src_path }}"
+      dest: "{{ war_path }}"
+      mode: 0755
+       
+  - name: Set permission to docker.sock file
+    file:
+      path: /var/run/docker.sock
+      state: file
+      mode: 0777
+    #become: yes
+     
+  - name: Create and Run containers for ecomm
+    docker_container:
+      name: "{{ container_name }}"
+      image: "{{ container_image }}"
+      detach: yes
+      published_ports: 12060:8080
+      volumes: "{{ war_path }}:{{ tgt_path }}"
+      state: started
+      restart: yes
+      
+  - name: Create ecomm container service
+    docker_swarm_service: 
+      name: "{{ service_name }}"
+      image: "{{ container_image }}"
+      mounts:
+        - source: "{{ war_path }}"
+          target: "{{ tgt_path }}"
+          type: bind
+      publish:
+        - published_port: 15050
+          target_port: 8080
+      mode: replicated
+      replicas: 2

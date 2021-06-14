@@ -1,0 +1,12 @@
+- hosts: localhost,capstone2
+  vars:
+  
+  - jobname: to_be_passed
+  - src_path: "/var/lib/jenkins/workspace/{{ jobname }}/target/ecomm-0.0.1.war"
+  - tgt_path: /opt/tomcat8/apache-tomcat-8.5.64/webapps
+  
+  tasks:
+  - name: Copy ecomm to tomcat webserver
+    copy:
+      src: "{{ src_path }}"
+      dest: "{{ tgt_path }}"  
