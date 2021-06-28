@@ -23,7 +23,7 @@
     get_url:
       url: "{{ artifactory_url }}"
       url_username: jfroguser
-      url_password: Antara19*
+      url_password: Axxxxxxx
       dest: "{{ war_path }}"
       
   - name: Copy ecomm to tomcat webserver
