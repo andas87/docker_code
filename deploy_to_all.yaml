@@ -1,39 +1,35 @@
-- hosts: localhost,capstone2
+- hosts: localhost
   
   vars: 
-    - jobname: to_be_passed
+    - artifactname: to_be_passed
+    - versionname: to_be_passed
     - service_name: ecomm_service
     - container_name: ecomm_docker
     - container_image: ecomm
-    - src_path: "/var/lib/jenkins/workspace/{{ jobname }}/target/ecomm-0.0.1.war"
+   # - src_path: "/var/lib/jenkins/workspace/{{ jobname }}/target/ecomm-0.0.1.war"
+    - artifactory_url: "http://localhost:8082/artifactory/demo-libs-release-local/ma20102974/ecomm/ecomm/{{ versionname }}/{{ artifactname }}"
     - war_path: "{{ ansible_user_dir }}/ecomm/webapp"
     - tgt_path: /opt/tomcat/apache-tomcat-8.5.64/webapps
     - web_path: /opt/tomcat8/apache-tomcat-8.5.64/webapps
-  
-  tasks: 
-  - name: Copy ecomm to tomcat webserver
-    copy:
-      src: "{{ src_path }}"
-      dest: "{{ web_path }}" 
-      
+    
+  tasks:       
   - name: Create war directory
     file:
       path: "{{ war_path }}"
       state: directory
       mode: 0755 
       
-  - name: Copy war to remote
-    copy:
-      src: "{{ src_path }}"
+  - name: Download war file from artifactory
+    get_url:
+      url: "{{ artifactory_url }}"
+      url_username: jfroguser
+      url_password: Antara19*
       dest: "{{ war_path }}"
-      mode: 0755
-       
-  - name: Set permission to docker.sock file
-    file:
-      path: /var/run/docker.sock
-      state: file
-      mode: 0777
-    #become: yes
+      
+  - name: Copy ecomm to tomcat webserver
+    copy:
+      src: "{{ war_path }}"
+      dest: "{{ web_path }}" 
      
   - name: Create and Run containers for ecomm
     docker_container:
